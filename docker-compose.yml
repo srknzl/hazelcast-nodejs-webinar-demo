@@ -1,0 +1,31 @@
+version: "3"
+services:
+    api:
+        build: api
+        ports:
+            - 127.0.0.1:3000:3000
+        networks:
+            - net1
+    db:
+        image: postgres:9.6.22
+        restart: always
+        environment: 
+            POSTGRES_PASSWORD: password
+        networks:
+            - net1
+        volumes: 
+            - ./table.sql:/docker-entrypoint-initdb.d/table.sql
+            - ./pgdata:/var/lib/postgresql/data
+
+    hazelcast:
+        image: hazelcast/hazelcast:4.2
+        networks:
+            - net1
+    frontend:
+        build: frontend
+        ports: 
+            - 127.0.0.1:8080:8080
+        networks:
+            - net1
+networks:
+    net1:

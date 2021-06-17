@@ -18,7 +18,10 @@
   "homepage": "https://github.com/hazelcast/nodejs-client-getting-started-webinar#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "connect-hazelcast": "^1.2.0",
+    "connect-pg-simple": "^6.2.1",
     "express": "^4.17.1",
+    "express-session": "^1.17.2",
     "hazelcast-client": "^4.2.0"
   }
 }

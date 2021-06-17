@@ -1,12 +1,22 @@
 const {Client} = require('hazelcast-client');
 
 const express = require('express');
+const session = require('express-session');
+const {json} = require('body-parser');
+
+const HazelcastStore = require('connect-hazelcast')(session);
+const PgStore = require('connect-pg-simple')(session);
+
 
 const blogPost = 'This is a sample blog post. In this blog post we will not say anything. Have a good day!';
 const maxFibonacci = 100; // Maximum allowed integer in computeFibonacci
 
 (async () => {
-    const hazelcastClient = await Client.newHazelcastClient();
+    const hazelcastClient = await Client.newHazelcastClient({
+        network: {
+            clusterMembers: ['hazelcast:5701']
+        }
+    });
 
     const fibonacciMap = await hazelcastClient.getMap('fibonacci');
     const counterMap = await hazelcastClient.getMap('counter');
@@ -30,10 +40,46 @@ const maxFibonacci = 100; // Maximum allowed integer in computeFibonacci
         return result;
     };
 
+    
+    
+
     const app = express();
 
+    app.use(json());
+    app.use(session({
+        /*
+        store: new PgStore({
+            conObject: {
+                user: 'postgres',
+                database: 'postgres',
+                password: 'password',
+                host: 'db',
+                port: 5432
+            }
+        }),
+        */
+        // /*
+        store: new HazelcastStore({
+            client: hazelcastClient
+        }),
+        // */
+        secret: 'shhhh',
+        resave: false,
+        saveUninitialized: true,
+        cookie: { 
+            secure: false,
+            maxAge: 86400 // a day
+        }
+    }));
+
     app.get('/', async (req, res, next) => {
-        const user = await sessionMap.get('user');
+        res.status(200).send('Up an running..');
+    });
+
+    app.post('/login', (req, res, next) => {
+        const username = req.body.username;
+        const password = req.body.password;
+
         res.status(200).send(user.toString());
     });
 
