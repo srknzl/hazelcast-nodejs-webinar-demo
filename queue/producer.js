@@ -2,8 +2,6 @@
 const { Client } = require('hazelcast-client');
 
 const productionFrequency = 10;
-// enables logs
-const debugLogs = true;
 
 (async () => {
     const hazelcastClient = await Client.newHazelcastClient();
@@ -22,7 +20,7 @@ const debugLogs = true;
     let counter = 1;
     interval = setInterval(async () => {
         try {
-            if(debugLogs)console.log(`Added ${counter} to the queue`);
+            console.log(`Added ${counter} to the queue`);
             await queue.add(counter);
             if(counter === Number.MAX_SAFE_INTEGER){ // reset counter if it is too big
                 counter = 1;

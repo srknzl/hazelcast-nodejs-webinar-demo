@@ -5,8 +5,6 @@ const { Client } = require('hazelcast-client');
 const maxWaitMilliseconds = 50;
 // The maximum amount that processing a job will take. The actual waited milliseconds will be between 0-maxProcessTime chosen randomly
 const maxProcessTime = 50;
-// enables logs
-const debugLogs = false;
 
 // Returns a promise that resolves after some milliseconds
 const promiseWaitMilliseconds = milliseconds => {
@@ -20,7 +18,7 @@ const promiseWaitMilliseconds = milliseconds => {
 const doJob = async job => {
     // A job that takes time
     await promiseWaitMilliseconds(Math.random() * maxProcessTime);
-    if(debugLogs)console.log(`The result is ${job * 2 + 1}`);
+    console.log(`The result is ${job * 2 + 1}`);
 };
 
 (async () => {
@@ -44,9 +42,9 @@ const doJob = async job => {
         try {
             const job = await queue.poll();
             if (job === null) {
-                if(debugLogs)console.log('No jobs available waiting..');
+                console.log('No jobs available waiting..');
             } else {
-                if(debugLogs)console.log(`Processing job: ${job}`);
+                console.log(`Processing job: ${job}`);
                 await doJob(job);
             }
             nextWaitTime = maxWaitMilliseconds * Math.random();
