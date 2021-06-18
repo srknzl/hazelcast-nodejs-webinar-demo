@@ -1,3 +1,4 @@
+'use strict';
 const {Client} = require('hazelcast-client');
 
 const express = require('express');
@@ -14,7 +15,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
             console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
         }
     }, undefined, true);
-    const counterMap = await hazelcastClient.getMap('counter');
+    const atomicCounter = await hazelcastClient.getCPSubsystem().getAtomicLong('counter');
 
     // Returns nth fibonacci, recursion based.
     // O(2^n) time complexity.
@@ -37,7 +38,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
 
     const app = express();
 
-    const endpoints = ['/blog', '/fibonacci', '/lock']
+    const endpoints = ['/blog', '/fibonacci/1']
 
     app.get('/', async (req, res, next) => {
         res.setHeader('Content-Type', 'text/html');
@@ -53,16 +54,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
     });
 
     app.get('/blog', async (req, res, next) => {
-        let viewCount;
-        await counterMap.lock('count');
-        viewCount = await counterMap.get('count');
-        if(viewCount === null){ // the key does not exists
-            viewCount = 1;
-        }
-        // increment viewCount
-        viewCount++; 
-        await counterMap.set('count', viewCount);
-        await counterMap.unlock('count');
+        const viewCount = await atomicCounter.addAndGet(1);
         res.status(200).send(`<h1>Sample blog</h1> <p>${blogPost}</p> <p>Viewed ${viewCount} times</p>`);
     });
 
@@ -80,11 +72,6 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
         } else {
             return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p>`);
         }
-    });
-
-    app.get('/lock/:n', async (req, res, next) => {
-        const n = req.params.n;
-        await fibonacciMap.loc
     });
 
     app.listen(3000, () => {
