@@ -10,11 +10,11 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
     const hazelcastClient = await Client.newHazelcastClient();
 
     const fibonacciMap = await hazelcastClient.getMap('fibonacci');
-    await fibonacciMap.addEntryListener({
-        added: (mapEvent)=>{
-            console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
-        }
-    }, undefined, true);
+    // await fibonacciMap.addEntryListener({
+    //     added: (mapEvent)=>{
+    //         console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
+    //     }
+    // }, undefined, true);
     const atomicCounter = await hazelcastClient.getCPSubsystem().getAtomicLong('counter');
 
     // Returns nth fibonacci, recursion based.
@@ -25,12 +25,12 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
             return cachedValue;
         }
         if(!Number.isInteger(n) || n > maxFibonacci){
-            return undefined;
+            throw new RangeError(`Expected an integer that is less than or equal to ${maxFibonacci} as nth fibonacci number argument`);
         }
         if(n === 0 || n == 1){
             return 1;
         }
-        // cache the computer value for future use
+        // cache the computed value for future use
         const result = await computeFibonacci(n - 1) + await computeFibonacci(n - 2);
         await fibonacciMap.set(n, result);
         return result;
@@ -64,14 +64,16 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
             return res.status(400).send('Give me n query parameter');
         }
         const startTime = process.hrtime.bigint();
-        const result = await computeFibonacci(+n);
+        let result;
+        try {
+            result = await computeFibonacci(+n);
+        } catch (error) {
+            return res.status(400).send(`<p>Bad argument, n is ${n}! ${error}</p>`);
+        }
         const endTime = process.hrtime.bigint();
         const timeElapsed = endTime - startTime;
-        if(result === undefined){ // error happened inside computeFibonacci
-            return res.status(400).send(`<p>n is invalid, please give an integer less than or equal to ${maxFibonacci}, given ${n}</p>`);
-        } else {
-            return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p>`);
-        }
+        return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p>`);
+
     });
 
     app.listen(3000, () => {
