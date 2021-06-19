@@ -18,6 +18,7 @@ const watchInterval = 10;
     process.on('SIGHUP', shutdown);
 
     const queue = await hazelcastClient.getQueue('jobs');
+
     interval = setInterval(async () => {
         try {
             console.log(`There are ${await queue.size()} items in the queue`);
