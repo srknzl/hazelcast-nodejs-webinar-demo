@@ -3,19 +3,20 @@ const {Client} = require('hazelcast-client');
 
 const express = require('express');
 
-const blogPost = 'This is a sample blog post. In this blog post we will not say anything. Have a good day!';
+const blogPost = 'This is a sample blog post. This is the body of the blog. Have a good day!';
 const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the bigger numbers will exceed Number.MAX_SAFE_INTEGER
 
 (async () => {
-    const hazelcastClient = await Client.newHazelcastClient();
-
-    const fibonacciMap = await hazelcastClient.getMap('fibonacci');
-    // await fibonacciMap.addEntryListener({
-    //     added: (mapEvent)=>{
-    //         console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
-    //     }
-    // }, undefined, true);
-    const atomicCounter = await hazelcastClient.getCPSubsystem().getAtomicLong('counter');
+    const addMapEntryListener = async () => {
+        await fibonacciMap.addEntryListener({
+            added: (mapEvent) => {
+                console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
+            },
+            expired: (mapEvent) => {
+                console.log(`Key ${mapEvent.key} is evicted`);
+            }
+        }, undefined, true);
+    };
 
     // Returns nth fibonacci, recursion based.
     // O(2^n) time complexity.
@@ -24,17 +25,25 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
         if(cachedValue !== null){
             return cachedValue;
         }
-        if(!Number.isInteger(n) || n > maxFibonacci){
-            throw new RangeError(`Expected an integer that is less than or equal to ${maxFibonacci} as nth fibonacci number argument`);
+        if(n === 0){
+            return 0;
         }
-        if(n === 0 || n == 1){
+        if(n == 1){
             return 1;
         }
         // cache the computed value for future use
         const result = await computeFibonacci(n - 1) + await computeFibonacci(n - 2);
-        await fibonacciMap.set(n, result);
+        await fibonacciMap.set(n, result, undefined, 10000);
         return result;
     };
+
+
+    const hazelcastClient = await Client.newHazelcastClient();
+
+    const fibonacciMap = await hazelcastClient.getMap('fibonacci');
+    await addMapEntryListener();
+
+    const atomicCounter = await hazelcastClient.getCPSubsystem().getAtomicLong('counter');
 
     const app = express();
 
@@ -42,7 +51,6 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
 
     app.get('/', async (req, res, next) => {
         res.setHeader('Content-Type', 'text/html');
-        res.write('<p>Up and running</p>');
         res.write('<p>Available endpoints are:</p>');
         res.write('<ul>');
         for(const endpoint of endpoints){
@@ -59,18 +67,21 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
     });
 
     app.get('/fibonacci/:n', async (req, res, next) => {
-        const n = req.params.n;
-        if(!n){
-            return res.status(400).send('Give me n query parameter');
-        }
-        const startTime = process.hrtime.bigint();
-        let result;
+        let n = req.params.n;
+        
         try {
-            result = await computeFibonacci(+n);
+            n = +n;
+            if(!Number.isInteger(n) || n > maxFibonacci){
+                throw new RangeError(`Expected an integer that is less than or equal to ${maxFibonacci}`);
+            }
         } catch (error) {
-            return res.status(400).send(`<p>Bad argument, n is ${n}! ${error}</p>`);
+            return res.status(400).send(`<p>Bad argument ${req.params.n}! ${error.message}</p>`);
         }
+
+        const startTime = process.hrtime.bigint();
+        const result = await computeFibonacci(n);
         const endTime = process.hrtime.bigint();
+
         const timeElapsed = endTime - startTime;
         return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p>`);
 
