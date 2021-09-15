@@ -1,31 +1,22 @@
 'use strict';
 const { Client } = require('hazelcast-client');
 
-// The maximum amount that a consumer will wait. The actual waited milliseconds will be between 0-maxWaitMilliseconds chosen randomly
-const maxWaitMilliseconds = 50;
 // The maximum amount that processing a job will take. The actual waited milliseconds will be between 0-maxProcessTime chosen randomly
-const maxProcessTime = 50;
-
-// Returns a promise that resolves after some milliseconds
-const promiseWaitMilliseconds = milliseconds => {
-    return new Promise(((resolve) => {
-        setTimeout(() => {
-            resolve();
-        }, milliseconds);
-    }));
-};
+const maxProcessTime = 2000;
 
 const doJob = async job => {
     // A job that takes time
-    await promiseWaitMilliseconds(Math.random() * maxProcessTime);
-    console.log(`The result is ${job * 2 + 1}`);
+    const waitMilliSeconds = Math.random() * maxProcessTime;
+    return new Promise(((resolve) => {
+        setTimeout(() => {
+            console.log(`Processed ${job}, the result is ${job * 2 + 1}`);
+            resolve();
+        }, waitMilliSeconds);
+    }));
 };
 
 (async () => {
-    let registrationID;
-
     const hazelcastClient = await Client.newHazelcastClient();
-
     const queue = await hazelcastClient.getQueue('jobs');
 
     const shutdown = async () => {
@@ -36,23 +27,20 @@ const doJob = async job => {
     process.on('SIGTERM', shutdown);
     process.on('SIGHUP', shutdown);
 
-    let nextWaitTime = maxWaitMilliseconds * Math.random(); // random wait between 0-maxWaitMilliseconds ms
-
-    const getNextJob = async () => {
+    const getJob = async () => {
         try {
             const job = await queue.poll();
             if (job === null) {
-                console.log('No jobs available waiting..');
+                console.log('No jobs available waiting 5 seconds..');
+                setTimeout(getJob, 5000);
             } else {
-                console.log(`Processing job: ${job}`);
                 await doJob(job);
+                setImmediate(getJob);
             }
-            nextWaitTime = maxWaitMilliseconds * Math.random();
-            setTimeout(getNextJob, nextWaitTime);
         } catch (error) {
             console.log(`An error occurred ${error}`);
         }
     };
     // initiate the first job
-    setTimeout(getNextJob, nextWaitTime);
-})();
+    getJob();
+})().catch(console.error);

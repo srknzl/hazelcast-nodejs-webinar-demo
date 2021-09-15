@@ -1,18 +1,13 @@
 'use strict';
 const { Client } = require('hazelcast-client');
 
-// Returns a promise that resolves after some milliseconds
-const promiseWaitMilliseconds = milliseconds => {
+const doJob = () => {
+    // A job that takes time
     return new Promise(((resolve) => {
         setTimeout(() => {
             resolve();
-        }, milliseconds);
+        }, 5000);
     }));
-};
-
-const doJob = async () => {
-    // A job that takes time
-    await promiseWaitMilliseconds(1000);
     // console.log(`${new Date().toISOString()} Important work...`);
 };
 
@@ -47,4 +42,4 @@ const doJob = async () => {
             console.log(`Cannot acquire lock ${error}`);
         }
     }
-})();
+})().catch(console.error);

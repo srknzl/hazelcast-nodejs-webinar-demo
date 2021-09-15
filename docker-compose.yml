@@ -1,12 +1,19 @@
 version: '3'
 services:
-  hz:
+  hz1:
     image: hazelcast/hazelcast:5.0-SNAPSHOT
     ports:
       - 127.0.0.1:5701:5701
     networks:
       - hz
 
+  hz2:
+    image: hazelcast/hazelcast:5.0-SNAPSHOT
+    ports:
+      - 127.0.0.1:5702:5702
+    networks:
+      - hz
+  
   management-center:
     image: hazelcast/management-center:latest-snapshot
     ports:

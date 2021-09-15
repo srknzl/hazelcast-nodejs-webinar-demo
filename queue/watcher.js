@@ -1,7 +1,7 @@
 'use strict';
 const { Client } = require('hazelcast-client');
 
-const watchInterval = 10;
+const watchInterval = 1000;
 
 (async () => {
     const hazelcastClient = await Client.newHazelcastClient();
@@ -26,4 +26,4 @@ const watchInterval = 10;
             console.log(`An error is occurred ${error}`);
         }
     }, watchInterval);
-})();
+})().catch(console.error);

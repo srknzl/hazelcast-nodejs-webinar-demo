@@ -24,13 +24,13 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
         if (n === 0) return long.fromNumber(0);
         if (n === 1) return long.fromNumber(1);
 
-        const cachedValue = await fibonacciMap.get(n);
+        const cachedValue = await fibonacciMap.get(long.fromNumber(n));
         if (cachedValue !== null) return cachedValue;
         
         const result = (await computeFibonacci(n - 1)).add(await computeFibonacci(n - 2));
         
         // cache the computed value for future use
-        await fibonacciMap.set(n, result, undefined, 10000);
+        await fibonacciMap.set(long.fromNumber(n), result, undefined, 10000);
         return result;
     };
 
@@ -87,4 +87,4 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
     app.listen(3000, () => {
         console.log('Server is started..');
     });
-})();
+})().catch(console.error);

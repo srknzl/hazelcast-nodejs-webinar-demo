@@ -1,7 +1,7 @@
 'use strict';
 const { Client } = require('hazelcast-client');
 
-const productionFrequency = 10;
+const productionFrequency = 1000;
 
 (async () => {
     const hazelcastClient = await Client.newHazelcastClient();
@@ -30,4 +30,4 @@ const productionFrequency = 10;
             console.log(error);
         }
     }, productionFrequency);
-})();
+})().catch(console.error);
