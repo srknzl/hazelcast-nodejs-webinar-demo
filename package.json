@@ -4,9 +4,6 @@
   "description": "Repo for Node.js client getting started webinar",
   "main": "index.js",
   "scripts": {
-    "websiteDemo": "nodemon website/index.js",
-    "lockDemo": "nodemon lock/index.js",
-    "queueDemo": "nodemon queue/index.js"
   },
   "repository": {
     "type": "git",
