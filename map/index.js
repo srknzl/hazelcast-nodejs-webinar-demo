@@ -1,10 +1,12 @@
 'use strict';
-const {Client} = require('hazelcast-client');
+const { Client } = require('hazelcast-client');
+const long = require('long');
+
 
 const express = require('express');
 
 const blogPost = 'This is a sample blog post. This is the body of the blog. Have a good day!';
-const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the bigger numbers will exceed Number.MAX_SAFE_INTEGER
+const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the bigger numbers will exceed max signed long value
 
 (async () => {
     const addMapEntryListener = async () => {
@@ -13,26 +15,23 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
                 console.log(`Key ${mapEvent.key} is added with value ${mapEvent.value}`);
             },
             expired: (mapEvent) => {
-                console.log(`Key ${mapEvent.key} is evicted`);
+                console.log(`Key ${mapEvent.key} is expired`);
             }
         }, undefined, true);
     };
 
-    // Returns nth fibonacci, recursion based.
+    // Calculates nth fibonacci number using recursion.
     // O(2^n) time complexity.
     const computeFibonacci = async (n) => {
+        if (n === 0) return long.fromNumber(0);
+        if (n === 1) return long.fromNumber(1);
+
         const cachedValue = await fibonacciMap.get(n);
-        if(cachedValue !== null){
-            return cachedValue;
-        }
-        if(n === 0){
-            return 0;
-        }
-        if(n == 1){
-            return 1;
-        }
+        if (cachedValue !== null) return cachedValue;
+        
+        const result = (await computeFibonacci(n - 1)).add(await computeFibonacci(n - 2));
+        
         // cache the computed value for future use
-        const result = await computeFibonacci(n - 1) + await computeFibonacci(n - 2);
         await fibonacciMap.set(n, result, undefined, 10000);
         return result;
     };
@@ -43,7 +42,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
     const fibonacciMap = await hazelcastClient.getMap('fibonacci');
     await addMapEntryListener();
 
-    const atomicCounter = await hazelcastClient.getCPSubsystem().getAtomicLong('counter');
+    const atomicCounter = await hazelcastClient.getPNCounter('counter');
 
     const app = express();
 
@@ -53,7 +52,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
         res.setHeader('Content-Type', 'text/html');
         res.write('<p>Available endpoints are:</p>');
         res.write('<ul>');
-        for(const endpoint of endpoints){
+        for (const endpoint of endpoints) {
             res.write(`<li><a href=${endpoint}>${endpoint}</li>`)
         }
         res.write('</ul>');
@@ -63,15 +62,15 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
 
     app.get('/blog', async (req, res, next) => {
         const viewCount = await atomicCounter.addAndGet(1);
-        res.status(200).send(`<h1>Sample blog</h1> <p>${blogPost}</p> <p>Viewed ${viewCount} times</p>`);
+        res.status(200).send(`<h1>Sample blog</h1> <p>${blogPost}</p> <p>Viewed ${viewCount} times</p> <a href="/">Go back</a>`);
     });
 
     app.get('/fibonacci/:n', async (req, res, next) => {
         let n = req.params.n;
-        
+
         try {
             n = +n;
-            if(!Number.isInteger(n) || n > maxFibonacci){
+            if (!Number.isInteger(n) || n > maxFibonacci) {
                 throw new RangeError(`Expected an integer that is less than or equal to ${maxFibonacci}`);
             }
         } catch (error) {
@@ -83,7 +82,7 @@ const maxFibonacci = 75; // Maximum allowed integer in computeFibonacci, the big
         const endTime = process.hrtime.bigint();
 
         const timeElapsed = endTime - startTime;
-        return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p>`);
+        return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p> <a href="/">Go back</a>`);
 
     });
 

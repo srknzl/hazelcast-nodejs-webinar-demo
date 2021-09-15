@@ -4,7 +4,9 @@
   "description": "Repo for Node.js client getting started webinar",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "mapDemo": "nodemon map/index.js",
+    "lockDemo": "nodemon lock/index.js",
+    "queueDemo": "nodemon queue/index.js"
   },
   "repository": {
     "type": "git",
