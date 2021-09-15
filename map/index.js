@@ -1,8 +1,6 @@
 'use strict';
 const { Client } = require('hazelcast-client');
 const long = require('long');
-
-
 const express = require('express');
 
 const blogPost = 'This is a sample blog post. This is the body of the blog. Have a good day!';
