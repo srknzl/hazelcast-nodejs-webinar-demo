@@ -42,18 +42,18 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
     const fibonacciMap = await hazelcastClient.getMap('fibonacci');
     await addMapEntryListener();
 
-    const atomicCounter = await hazelcastClient.getPNCounter('counter');
+    const counter = await hazelcastClient.getPNCounter('viewCounter');
 
     const app = express();
 
-    const endpoints = ['/blog', '/fibonacci/1']
+    const routes = ['/blog', '/fibonacci/0']
 
     app.get('/', async (req, res, next) => {
         res.setHeader('Content-Type', 'text/html');
-        res.write('<p>Available endpoints are:</p>');
+        res.write('<p>Available pages are:</p>');
         res.write('<ul>');
-        for (const endpoint of endpoints) {
-            res.write(`<li><a href=${endpoint}>${endpoint}</li>`)
+        for (const route of routes) {
+            res.write(`<li><a href=${route}>${route}</li>`)
         }
         res.write('</ul>');
         res.status(200)
@@ -61,7 +61,7 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
     });
 
     app.get('/blog', async (req, res, next) => {
-        const viewCount = await atomicCounter.addAndGet(1);
+        const viewCount = await counter.addAndGet(1);
         res.status(200).send(`<h1>Sample blog</h1> <p>${blogPost}</p> <p>Viewed ${viewCount} times</p> <a href="/">Go back</a>`);
     });
 
