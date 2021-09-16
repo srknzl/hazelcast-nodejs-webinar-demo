@@ -3,11 +3,8 @@ const { Client } = require('hazelcast-client');
 const long = require('long');
 const express = require('express');
 
-const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the bigger numbers will exceed max signed long value
-
 (async () => {
     // Calculates nth fibonacci number using recursion.
-    // O(2^n) time complexity.
     const computeFibonacci = async (n) => {
         if (n === 0) return long.fromNumber(0);
         if (n === 1) return long.fromNumber(1);
@@ -18,7 +15,7 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
         const result = (await computeFibonacci(n - 1)).add(await computeFibonacci(n - 2));
         
         // cache the computed value for future use
-        await fibonacciMap.set(long.fromNumber(n), result, undefined, 10000);
+        await fibonacciMap.set(long.fromNumber(n), result, undefined, 20000);
         return result;
     };
 
@@ -62,8 +59,8 @@ const maxFibonacci = 93; // Maximum allowed integer in computeFibonacci, the big
 
         try {
             n = +n;
-            if (!Number.isInteger(n) || n > maxFibonacci) {
-                throw new RangeError(`Expected an integer that is less than or equal to ${maxFibonacci}`);
+            if (!Number.isInteger(n)) {
+                throw new RangeError(`Expected an integer.`);
             }
         } catch (error) {
             return res.status(400).send(`<p>Bad argument ${req.params.n}! ${error.message}</p>`);
