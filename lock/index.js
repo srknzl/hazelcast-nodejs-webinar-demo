@@ -8,7 +8,6 @@ const doJob = () => {
             resolve();
         }, 5000);
     }));
-    // console.log(`${new Date().toISOString()} Important work...`);
 };
 
 (async () => {
