@@ -8,11 +8,15 @@ const express = require('express');
     const computeFibonacci = async (n) => {
         if (n === 0) return long.fromNumber(0);
         if (n === 1) return long.fromNumber(1);
-
+        
+        // Return from cache if exists.
         const cachedValue = await fibonacciMap.get(long.fromNumber(n));
         if (cachedValue !== null) return cachedValue;
-        
-        const result = (await computeFibonacci(n - 1)).add(await computeFibonacci(n - 2));
+    
+        // fn = fn-1 + fn-2
+        const long1 = await computeFibonacci(n - 1);
+        const long2 = await computeFibonacci(n - 2)
+        const result = long1.add(long2);
         
         // cache the computed value for future use
         await fibonacciMap.set(long.fromNumber(n), result, undefined, 20000);
