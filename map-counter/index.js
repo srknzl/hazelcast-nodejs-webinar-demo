@@ -23,7 +23,6 @@ const express = require('express');
         return result;
     };
 
-
     const hazelcastClient = await Client.newHazelcastClient();
 
     const fibonacciMap = await hazelcastClient.getMap('fibonacci');
@@ -76,7 +75,6 @@ const express = require('express');
 
         const timeElapsed = endTime - startTime;
         return res.status(200).send(`<p>Result ${result} is computed in ${timeElapsed / 1000n} microseconds</p> <a href="/">Go back</a>`);
-
     });
 
     app.listen(3000, () => {
