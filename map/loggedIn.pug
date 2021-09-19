@@ -1,0 +1,12 @@
+html
+  head
+    title Hazelcast Node.js Client
+  body
+    p Welcome #{username}
+    if orders
+        p Your orders:
+        ul
+            each order in orders
+                li= order
+    form(action="/logout", method="post")
+        button(type="submit") Logout
