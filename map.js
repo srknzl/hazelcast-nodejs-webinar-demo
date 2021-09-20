@@ -14,8 +14,8 @@ async function main(){
         }
     }, undefined, true);
 
-    await map.put('name', 'Serkan');
-    await map.put('surname', 'Ozel');
+    await map.set('name', 'Serkan');
+    await map.set('surname', 'Ozel');
 
     console.log(await map.size()); // 2
     console.log(await map.get('name')); // Serkan
