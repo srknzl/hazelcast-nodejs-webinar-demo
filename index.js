@@ -59,6 +59,6 @@ const HazelcastStore = require('connect-hazelcast')(session);
     });
 
     app.listen(3000, () => {
-        console.log('Server is started..');
+        console.log('Server is started at http://localhost:3000..');
     });
 })().catch(console.error);
