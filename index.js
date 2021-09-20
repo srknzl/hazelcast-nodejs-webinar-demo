@@ -8,14 +8,25 @@ const HazelcastStore = require('connect-hazelcast')(session);
 
 
 (async () => {
-    const hazelcastClient = await Client.newHazelcastClient();
+    const client = await Client.newHazelcastClient();
+    const sessionsMap = await client.getMap('sessions');
+
+    await sessionsMap.addEntryListener({
+        added: (event) => {
+            console.log(`Added entry: ${event.key} -> ${event.value}`)
+        },
+        removed: (event) => {
+            console.log(`Removed entry: ${event.key} -> ${event.value}`)
+        }
+    }, undefined, true);
 
     const app = express();
 
     app.use(bodyParser.urlencoded());
     app.use(session({
         store: new HazelcastStore({
-            client: hazelcastClient
+            client: client,
+            prefix: 'sessions'
         }),
         secret: 'secret'
     }));
