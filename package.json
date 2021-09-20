@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "Repo for Node.js client getting started webinar",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "starthz": "docker-compose up",
+    "start": "node index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hazelcast/nodejs-client-getting-started-webinar.git"
