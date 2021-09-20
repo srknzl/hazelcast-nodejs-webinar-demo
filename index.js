@@ -14,6 +14,9 @@ const HazelcastStore = require('connect-hazelcast')(session);
         added: (event) => {
             console.log(`Added entry: ${event.key} -> ${JSON.stringify(event.value)}`)
         },
+        updated: (event) => {
+            console.log(`Update entry: key ${event.key}, ${JSON.stringify(event.oldValue)} -> ${JSON.stringify(event.value)}`)
+        },
         removed: (event) => {
             console.log(`Removed entry: ${event.key}`)
         }

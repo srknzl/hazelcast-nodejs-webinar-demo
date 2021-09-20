@@ -21,6 +21,9 @@ async function main(){
     console.log(await map.get('name')); // Serkan
 
     await map.delete('name');
+
+    console.log(await map.get('name')); // null
+
     await client.shutdown();
 }
 
