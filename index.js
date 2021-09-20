@@ -6,17 +6,16 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const HazelcastStore = require('connect-hazelcast')(session);
 
-
 (async () => {
     const client = await Client.newHazelcastClient();
     const sessionsMap = await client.getMap('sessions');
 
     await sessionsMap.addEntryListener({
         added: (event) => {
-            console.log(`Added entry: ${event.key} -> ${event.value}`)
+            console.log(`Added entry: ${event.key} -> ${JSON.stringify(event.value)}`)
         },
         removed: (event) => {
-            console.log(`Removed entry: ${event.key} -> ${event.value}`)
+            console.log(`Removed entry: ${event.key}`)
         }
     }, undefined, true);
 
