@@ -28,6 +28,7 @@ async function main(){
 
     await map.delete('name');
 
+    console.log(await map.size()); // 0
     console.log(await map.get('name')); // null
 
     await client.shutdown();
