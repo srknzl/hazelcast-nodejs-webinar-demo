@@ -20,6 +20,7 @@ const HazelcastStore = require('connect-hazelcast')(session);
     }));
 
     app.set('view engine', 'pug');
+    app.set('views', path.join(__dirname, 'views'));
 
     app.get('/', async (req, res, next) => {
         res.setHeader('Content-Type', 'text/html');
