@@ -7,6 +7,6 @@ https://docs.google.com/presentation/d/1YnZPh4OAK4o87YvmO6g7fDlsQflSlEuz_V5doid9
 
 ## Structure
 
-[api](./api) folder includes a simple web session clustering demo
-[map](./map) folder includes a map demo
-[queue](./queue) folder includes a queue demo
+* [api](./api) folder includes a simple web session clustering demo
+* [map](./map) folder includes a map demo
+* [queue](./queue) folder includes a queue demo
