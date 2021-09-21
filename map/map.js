@@ -11,14 +11,20 @@ async function main(){
         },
         removed: (event) => {
             console.log(`Removed entry with key ${event.key}`)
+        },
+        updated: (event) => {
+            console.log(`Updated entry with key ${event.key} from ${event.oldValue} to ${event.value}`)
         }
     }, undefined, true);
 
     await map.set('name', 'Serkan');
-    await map.set('surname', 'Ozel');
 
-    console.log(await map.size()); // 2
     console.log(await map.get('name')); // Serkan
+
+    await map.set('name', 'Mustafa');
+
+    console.log(await map.size()); // 1
+    console.log(await map.get('name')); // Mustafa
 
     await map.delete('name');
 

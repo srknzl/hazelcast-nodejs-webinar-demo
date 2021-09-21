@@ -2,39 +2,24 @@
 const { Client } = require('hazelcast-client');
 const express = require('express');
 const path = require('path');
-const bodyParser = require('body-parser');
+const {urlencoded} = require('body-parser');
 const session = require('express-session');
 const HazelcastStore = require('connect-hazelcast')(session);
 
 (async () => {
     const client = await Client.newHazelcastClient();
-    const sessionsMap = await client.getMap('sessions');
-
-    await sessionsMap.addEntryListener({
-        added: (event) => {
-            console.log(`Added entry: ${event.key} -> ${JSON.stringify(event.value)}`)
-        },
-        updated: (event) => {
-            console.log(`Update entry: key ${event.key}, ${JSON.stringify(event.oldValue)} -> ${JSON.stringify(event.value)}`)
-        },
-        removed: (event) => {
-            console.log(`Removed entry: ${event.key}`)
-        }
-    }, undefined, true);
-
     const app = express();
 
-    app.use(bodyParser.urlencoded());
+    app.use(urlencoded());
     app.use(session({
         store: new HazelcastStore({
             client: client,
             prefix: 'sessions'
         }),
-        secret: 'secret'
+        secret: 'shh'
     }));
 
     app.set('view engine', 'pug');
-    app.set('views', '.');
 
     app.get('/', async (req, res, next) => {
         res.setHeader('Content-Type', 'text/html');
