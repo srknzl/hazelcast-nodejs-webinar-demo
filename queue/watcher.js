@@ -14,8 +14,6 @@ const watchInterval = 1000;
     };
 
     process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-    process.on('SIGHUP', shutdown);
 
     const queue = await hazelcastClient.getQueue('jobs');
 
